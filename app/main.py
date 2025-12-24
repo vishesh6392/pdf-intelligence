@@ -5,6 +5,7 @@ load_dotenv()
 
 from app.api.upload import router as upload_router
 from app.api.queryApi import router as query_router
+from app.api.status import router as status_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -23,12 +24,17 @@ def create_app() -> FastAPI:
     )
     app.include_router(
         upload_router,
-        prefix="/v1/documents",
+        prefix="/api",
         tags=["Documents"]
     )
 
     app.include_router(
         query_router,
+        prefix="/api"
+    )
+
+    app.include_router(
+        status_router,
         prefix="/api"
     )
 

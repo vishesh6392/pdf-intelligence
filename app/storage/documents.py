@@ -2,8 +2,14 @@ import json
 import os
 from typing import Optional,Dict
 
-DATA_DIR="data/registry"
+
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..")
+)
+DATA_DIR=os.path.join(BASE_DIR, "data", "registry")
 REGISTRY_FILE=os.path.join(DATA_DIR,"documents.json")
+
+print("USING REGISTRY FILE:", REGISTRY_FILE)
 
 os.makedirs(DATA_DIR,exist_ok=True)
 
@@ -42,3 +48,11 @@ def update_document_status(document_id:str,status:str):
 def get_document(document_id:str)->Optional[Dict]:
     registry= _load_registry()
     return registry.get(document_id)    
+
+def get_documents_by_status(status: str):
+    registry = _load_registry()
+    return {
+        doc_id: doc
+        for doc_id, doc in registry.items()
+        if doc["status"] == status
+    }

@@ -37,19 +37,22 @@
 #     print(f"Page {r['page_number']} | Score {r['score']:.3f}")
 #     print(r["text"][:200])
 #     print("-" * 40)
-from app.core.reply import reply_by_llm   # adjust path if filename differs
+# from app.core.reply import reply_by_llm   # adjust path if filename differs
 
-DOCUMENT_ID = "96e20624-0804-4736-a7ab-2b899595a7df"
-QUERY = "What is eigenvalue?"
+# DOCUMENT_ID = "96e20624-0804-4736-a7ab-2b899595a7df"
+# QUERY = "What is eigenvalue?"
 
-answer = reply_by_llm(
-    document_id=DOCUMENT_ID,
-    query=QUERY
-)
+# answer = reply_by_llm(
+#     document_id=DOCUMENT_ID,
+#     query=QUERY
+# )
 
-print("\n===== FINAL ANSWER =====\n")
-print(answer)
+# print("\n===== FINAL ANSWER =====\n")
+# print(answer)
+ 
+from app.storage.documents import get_document
 
+print( get_document("c7a3024a-dc77-4b69-bd6c-c746f50e7b68"))
 
 
 

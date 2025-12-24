@@ -1,5 +1,5 @@
 venv/
-.env/
+.env
 .env.*
 
 
@@ -22,3 +22,8 @@ __pycache__/
 *.pem
 *.key
 *.crt
+
+# Runtime data directories (DO NOT COMMIT)
+data/index/
+data/raw/
+data/registry/
