@@ -6,6 +6,7 @@ load_dotenv()
 from app.api.upload import router as upload_router
 from app.api.queryApi import router as query_router
 from app.api.status import router as status_router
+from app.core.syncS3 import start_background_sync
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -37,6 +38,12 @@ def create_app() -> FastAPI:
         status_router,
         prefix="/api"
     )
+
+
+    @app.on_event("startup")
+    def startup_event():
+        start_background_sync()
+
 
     @app.get("/health", tags=["System"])
     def health():

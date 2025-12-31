@@ -1,12 +1,14 @@
 
 from typing import List,Dict
 import traceback
-from app.storage.s3 import download_pdf
+import os
+from app.storage.s3 import download_pdf,upload_file
 from app.ingestion.loader.pdf_text_loader import load_pdf_text
 from app.storage.documents import update_document_status
 from app.ingestion.chunker import chunk_pages
 from app.ingestion.embedder import embed_chunks
 from app.ingestion.indexer import build_faiss_index
+
 
 def ingest_documnents(document_id:str)-> None:
     try:
@@ -87,6 +89,24 @@ def ingest_documnents(document_id:str)-> None:
                 "total_pages": total_pages
             }
         )
+
+        index_dir = os.path.join("data", "index", document_id)
+
+        upload_file(
+            os.path.join(index_dir, "faiss.index"),
+            f"index/{document_id}/faiss.index"
+        )
+
+        upload_file(
+            os.path.join(index_dir, "meta.json"),
+            f"index/{document_id}/meta.json"
+        )
+
+        upload_file(
+            "data/registry/documents.json",
+            "registry/documents.json"
+        )
+
 
 
 

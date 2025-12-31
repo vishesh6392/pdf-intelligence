@@ -31,5 +31,21 @@ def download_pdf(s3_key:str)-> BytesIO:
     )
     buffer.seek(0)
     return buffer
+
+def upload_file(local_path: str, s3_key: str):
+    s3.upload_file(
+        local_path,
+        S3_BUCKET,
+        s3_key
+    )
+
+def download_file(s3_key: str, local_path: str):
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    s3.download_file(
+        S3_BUCKET,
+        s3_key,
+        local_path
+    )
+
         
 
