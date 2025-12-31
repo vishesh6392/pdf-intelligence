@@ -30,18 +30,21 @@ def create_document( document_id:str, filename:str,status:str):
     registry[document_id]={
         "document_id":document_id,
         "filename":filename,
-        "status":status
+        "status":status,
+        "progress":None
     }
 
     _save_resgitry(registry)
 
-def update_document_status(document_id:str,status:str):
+def update_document_status(document_id:str,status:str,progress:Optional[Dict]=None):
 
     registry=_load_registry()
     if document_id not in registry:
         raise ValueError("Document not found")
     
     registry[document_id]["status"]=status
+    if progress is not None:
+        registry[document_id]["progress"]=progress
 
     _save_resgitry(registry)
 

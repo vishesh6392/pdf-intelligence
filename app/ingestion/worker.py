@@ -21,24 +21,76 @@ def ingest_documnents(document_id:str)-> None:
         pages:List[Dict]=load_pdf_text(pdf_bytes)
         if not pages:
             print(f"[WARN] no text extracted for document {document_id}")
+            update_document_status(document_id, status="FAILED")
+            return
+        total_pages = len(pages)
         print(f"[INFO]extracted{len(pages)} pages from document {document_id}")
-
-        chunks=chunk_pages(pages)
-        if not chunks:
-            raise ValueError("chunking produce not chunk")
-        print(f"created {len(chunks)} chunks")
-
-
-        embeddings=embed_chunks(chunks)
-        if  embeddings.size == 0:
-            raise ValueError("embedding fails")
-        print(f"generated embedding with sphape {embeddings.shape}")
         
+        BATCH_SIZE = 16
+        MAX_CHUNKS_PER_PAGE = 50    
+        batch_chunks: List[Dict] = []
+        
+        for page_index,page in enumerate(pages):
 
-        build_faiss_index( document_id=document_id,embeddings=embeddings,chunks=chunks)
+            if page_index % 5 == 0:
+                update_document_status(
+                    document_id,
+                    status="processing",   # IMPORTANT: unchanged
+                    progress={
+                        "processed_pages": page_index,
+                        "total_pages": total_pages
+                    }
+                )
+
+            # Chunk only THIS page
+
+            page_chunks = chunk_pages([page])[:MAX_CHUNKS_PER_PAGE]
+
+            for chunk in page_chunks:
+                batch_chunks.append(chunk)
+
+                # 6️⃣ When batch is full → embed + index
+                if len(batch_chunks) == BATCH_SIZE:
+                    try:
+                        embeddings = embed_chunks(batch_chunks)
+                        build_faiss_index(
+                            document_id=document_id,
+                            embeddings=embeddings,
+                            chunks=batch_chunks
+                        )
+                    except Exception as e:
+                        # One bad batch should not kill the whole document
+                        print(f"[WARN] Batch failed, skipping batch: {e}")
+                    finally:
+                        # Always free memory
+                        batch_chunks.clear()
+
+        # 6️⃣ Flush remaining chunks
+        if batch_chunks:
+            try:
+                embeddings = embed_chunks(batch_chunks)
+                build_faiss_index(
+                    document_id=document_id,
+                    embeddings=embeddings,
+                    chunks=batch_chunks
+                )
+            except Exception as e:
+                print(f"[WARN] Final batch failed: {e}")
+            finally:
+                batch_chunks.clear()
+
+        update_document_status(
+            document_id,
+            status="processing",
+            progress={
+                "processed_pages": total_pages,
+                "total_pages": total_pages
+            }
+        )
+
+
 
         update_document_status(document_id,status="Ready")
-
         print(f"success , document {document_id} indexed and ready")
 
     except Exception as e:
